@@ -104,6 +104,7 @@ int encrypt_file(char *input_filename, char *output_filename, char *rsa_encrypti
     // Signature
     char *signed_filename = (char *)"signed_file";
     sign(input_filename, signed_filename, rsa_key_file);
+    cout << "SIGNATURE SUCCESSFUL\n";
 
     // ZIP Compression
     char *compressed_filename = (char *)"compressed_file";
@@ -135,6 +136,7 @@ int encrypt_file(char *input_filename, char *output_filename, char *rsa_encrypti
     write_to_file(enc_params->iv, e_key, enc_params->encrypted_content_filename, output_filename);
     cout << "WRITE TO FILE SUCCESSFUL\n";
 
+    remove(signed_filename);
     remove(compressed_filename);
     remove(enc_params->encrypted_content_filename);
 
@@ -170,9 +172,27 @@ int decrypt_file(char *input_filename, char *output_filename, char *rsa_encrypti
     cout << "AES DECRYPT SUCCESSFUL\n";
 
     // ZIP Decompression
-    decompress_one_file(compressed_filename, output_filename);
+    char *signed_filename = (char *)"signed_file";
+    decompress_one_file(compressed_filename, signed_filename);
     cout << "ZIP DECOMPRESSION SUCCESSFUL\n";
 
+    // cout << file_size(signed_filename) << endl;
+
+    // Verification
+    FILE *rsa_pkey_file = fopen(rsa_signature_key, "rb");
+    if (!rsa_pkey_file) {
+        perror(rsa_signature_key);
+        fprintf(stderr, "Error1 loading PEM RSA Public Key File.\n");
+        exit(1);
+    }
+
+    bool verified = verify(signed_filename, output_filename, rsa_pkey_file);
+    if(!verified){
+        fprintf(stderr, "Error verifying signature.\n");
+    }
+    else cout << "SIGNATURE VERIFIED\n";
+
+    remove(signed_filename);
     remove(compressed_filename);
     remove(enc_params->encrypted_content_filename);
     return 1;

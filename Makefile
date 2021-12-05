@@ -1,16 +1,16 @@
 all: result.out
 
 result.out: driver.cpp aes.o rsa.o compress.o
-	g++ driver.cpp aes.o rsa.o compress.o -o result.out -lssl -lcrypto -lm -lz
+	g++ driver.cpp aes.o rsa.o compress.o -o result.out -lcrypto -lz
 
 aes.o: aes.cpp
-	g++ aes.cpp -c -lssl -lcrypto
+	g++ aes.cpp -c -lcrypto
 
 rsa.o: rsa.cpp
-	g++ rsa.cpp -c -lssl -lcrypto
+	g++ rsa.cpp -c -lcrypto
 
 compress.o: compress.cpp
-	g++ compress.cpp -lm -lz -c
+	g++ compress.cpp -lz -c
 
 run_e:
 	./result.out encrypt secret.txt encrypted_file rec_public.pem send_private.pem
@@ -25,4 +25,4 @@ keygen:
 	openssl rsa -in send_private.pem -outform PEM -pubout -out send_public.pem
 
 clean:
-	rm -f *.o *.out *.pem encrypted_file.txt decrypted_file.txt
+	rm -f *.o *.out *.pem encrypted_file decrypted_file.txt
